@@ -31,53 +31,68 @@
 			function _initDOM(smallUrl,bigUrl){
 				var	modalDialogStr='<div id="icDialog"><span id="optionClose">X</span><div id="imgContainer"><img id="imageShow" class="imgChangeable"/></div><span id="optionBottom"><span id="optionReset">重置</span><span id="optionLarge">放大</span><span id="currentSize">100%</span><span id="optionSmall">缩小</span><span id="optionRotate">旋转</span></span></div>';
 				$('body').append(modalDialogStr);
-				$('#imageShow').attr('src',smallUrl).attr('data-small',smallUrl).attr('data-big',bigUrl);
+				$('#imageShow').attr('src',smallUrl);
+				$('#imageShow').data({
+					smallUrl:smallUrl,
+					bigUrl:bigUrl
+				});
 			}
 
 			function _initOptionEvent(){
+				var width=$('#imageShow').width(),
+					height=$('#imageShow').height();
+
+				$('#imageShow').data({
+					originSize:width*height,
+					width:width,
+					height:height,
+					currentSize:width*height,
+					rotate:0
+				});
+
 				$('#optionClose').off('click').on('click',function(e){
 					$('#icDialog').remove();
 				});
 				$('#optionLarge').off('click').on('click',function(e){
-					var width=$('#imageShow').width(),
-						height=$('#imageShow').height(),
-						ratio=width/height;
-					width+=20;
-					height+=20;
-					console.debug(width);
+					var curWidth=$('#imageShow').data('width')+20;
+			
+					
+
 					if($('#imageShow').hasClass('imgChangeable')){
 						$('#imageShow').removeClass('imgChangeable');
 					}
-					if(width>=800||height>=800){
-						if($('#imageShow').attr('src')!==$('#imageShow').attr('data-big')){
-							$('#imageShow').attr('src',$('#imageShow').attr('data-big'));
-						}
+					if($('#imageShow').data('width')>=800&&$('#imageShow').attr('src')!==$('#imageShow').data('bigUrl')){
+						$('#imageShow').attr('src',$('#imageShow').data('bigUrl'));
 					}
-					if($('#imageShow').data('rotate')/90%2==1){
-						$('#imageShow').height(height).width(height*ratio);
-					}else{
-						$('#imageShow').width(width);
-						$('#imageShow').height(width/ratio);
-					}						
-					$('#currentSize').html(parseInt())
+
+					$('#imageShow').width(curWidth);
+					$('#imageShow').data('width',curWidth);
+					$('#imageShow').data('height',$('#imageshow').height());
+					_calculateAndSet();				
 				});
 				$('#optionSmall').off('click').on('click',function(e){
-					var width=$('#imageShow').width();
-					width-=20;
+					var curWidth=$('#imageShow').data('width')-20;
 					if(width>400){
-						$('#imageShow').css('width',width+'px');	
+						$('#imageShow').width(curWidth);
+						$('#imageShow').data('width',curWidth);
+						$('#imageShow').data('height',$('#imageshow').height());
+						_calculateAndSet();
 					}
 				});
 
 				$('#optionRotate').off('click').on('click',function(e){
 					var angle=$('#imageShow').data('rotate'),
-						width=$('#imageShow').width(),
-						height=$('#imageShow').height();
+						curWidth=$('#imageShow').data('width'),
+						curHeight=$('#imageShow').data('height'),
+						curRotate=$('#imageShow').data('rotate')+1;
 
-					angle=angle==null?0:angle;
-					angle+=90;
-					$('#imageShow').css('transform','rotate('+angle+'deg)');
-					$('#imageShow').data('rotate',angle);
+					if(curWidth>curHeight){
+						$('#imageShow').css('margin-top',(curWidth-curHeight)/2+'px');
+					}else{
+						$('#imageShow').css('margin-top',0);
+					}
+					$('#imageShow').css('transform','rotate('+curRotate*90+'deg)');
+					$('#imageShow').data('rotate',curRotate);
 				});
 			}
 
