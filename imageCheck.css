@@ -1,0 +1,57 @@
+#icDialog{
+	display: block;
+	width:800px;
+	height: 600px;
+	position: fixed;
+	left:50%;
+	margin-left:-400px;
+	top:10%;
+	background:rgba(40,47,45,0.85);
+	z-index:1000;
+	box-sizing: border-box;
+	padding:2px 40px 0px;
+	text-align: center;
+}
+#imgContainer{
+	overflow: auto;
+	height: 596px;
+}
+.imgChangeable{
+	max-width: 100%;
+	max-height: 100%;
+}
+#optionBottom{
+	height: 40px;
+	width:400px;
+	background-color:#959495;
+	display: inline-block;
+	position: absolute;
+	bottom:2px;
+	left:200px; 
+	border-radius: 15px 15px 0 0;
+}
+#optionClose{
+	position: absolute;
+    right: 0;
+    background-color: #7d7c7d;
+    padding: 10px 14px;
+    border-radius: 50%;
+    color: #fefefe;
+    z-index: 1001;
+    cursor: pointer;
+}
+#optionBottom span{
+	line-height: 40px;
+	padding:5px 10px;
+	color:#fff;
+	font-family: 'Microsoft Yahei';
+	border-left:1px solid #7d7c7d;
+	cursor: pointer;
+	z-index:1001;
+}
+#optionBottom span:first-child{
+	border-left: 0px;
+}
+#optionBottom span:hover{
+	color:#3fb0dc;
+}
