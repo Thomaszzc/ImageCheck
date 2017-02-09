@@ -55,3 +55,6 @@
 #optionBottom span:hover{
 	color:#3fb0dc;
 }
+#currentSize:after{
+	content: '%';
+}

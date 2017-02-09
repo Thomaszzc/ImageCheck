@@ -29,7 +29,7 @@
 			});
 
 			function _initDOM(smallUrl,bigUrl){
-				var	modalDialogStr='<div id="icDialog"><span id="optionClose">X</span><div id="imgContainer"><img id="imageShow" class="imgChangeable"/></div><span id="optionBottom"><span id="optionReset">重置</span><span id="optionLarge">放大</span><span id="currentSize">100%</span><span id="optionSmall">缩小</span><span id="optionRotate">旋转</span></span></div>';
+				var	modalDialogStr='<div id="icDialog"><span id="optionClose">X</span><div id="imgContainer"><img id="imageShow" class="imgChangeable"/></div><span id="optionBottom"><span id="optionReset">重置</span><span id="optionLarge">放大</span><span id="currentSize">100</span><span id="optionSmall">缩小</span><span id="optionRotate">旋转</span></span></div>';
 				$('body').append(modalDialogStr);
 				$('#imageShow').attr('src',smallUrl);
 				$('#imageShow').data({
@@ -38,45 +38,40 @@
 				});
 			}
 
-			function _initOptionEvent(){
+			function _initImageData(){
 				var width=$('#imageShow').width(),
 					height=$('#imageShow').height();
-
 				$('#imageShow').data({
-					originSize:width*height,
+					originWidth:width,
+					originHeight:height,
 					width:width,
 					height:height,
-					currentSize:width*height,
 					rotate:0
 				});
+			}
+
+
+			function _initOptionEvent(){
+				_initImageData();
 
 				$('#optionClose').off('click').on('click',function(e){
 					$('#icDialog').remove();
 				});
 				$('#optionLarge').off('click').on('click',function(e){
 					var curWidth=$('#imageShow').data('width')+20;
-			
-					
-
 					if($('#imageShow').hasClass('imgChangeable')){
 						$('#imageShow').removeClass('imgChangeable');
 					}
 					if($('#imageShow').data('width')>=800&&$('#imageShow').attr('src')!==$('#imageShow').data('bigUrl')){
 						$('#imageShow').attr('src',$('#imageShow').data('bigUrl'));
 					}
-
-					$('#imageShow').width(curWidth);
-					$('#imageShow').data('width',curWidth);
-					$('#imageShow').data('height',$('#imageshow').height());
-					_calculateAndSet();				
+					_scale(curWidth);
+									
 				});
 				$('#optionSmall').off('click').on('click',function(e){
 					var curWidth=$('#imageShow').data('width')-20;
-					if(width>400){
-						$('#imageShow').width(curWidth);
-						$('#imageShow').data('width',curWidth);
-						$('#imageShow').data('height',$('#imageshow').height());
-						_calculateAndSet();
+					if(curWidth>400){
+						_scale(curWidth)
 					}
 				});
 
@@ -94,16 +89,36 @@
 					$('#imageShow').css('transform','rotate('+curRotate*90+'deg)');
 					$('#imageShow').data('rotate',curRotate);
 				});
+
+				$('#optionReset').off('click').on('click',function(e){
+					_reset();
+				});
 			}
 
 			function _calculateAndSet(){
-
+				var curSize=$('#imageShow').data('width')*$('#imageShow').data('height'),
+					originSize=$('#imageShow').data('originWidth')*$('#imageShow').data('originHeight'),
+					ratio=parseInt(curSize/originSize*100);
+					console.log(ratio);
+				$('#currentSize').html(ratio);
 			}
 
-			function _enLarge(){
-
+			function _scale(curWidth){
+				$('#imageShow').width(curWidth);
+				$('#imageShow').data('width',curWidth);
+				$('#imageShow').data('height',$('#imageshow').height());
+				_calculateAndSet();
 			}
 
+			function _reset(){
+				$('#imageShow').width($('#imageShow').data('originWidth'));
+				$('#imageShow').css({
+					'transform':'rotate(0deg)',
+					'margin-top':0
+				});
+				$('#currentSize').html('100');
+				_initImageData();
+			}
 
 		}
 
