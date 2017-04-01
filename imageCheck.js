@@ -11,115 +11,105 @@
 	}
 	ImageCheck.prototype={
 		constructor:ImageCheck,
-		bigImageHost:'storage.lianjia.com',
-		smallImageHost:'img.ljcdn.com',
 		init:function(param){
 			var self=this;
 			$('.imageCheck').off('click').on('click',function(e){
 				var target=e.target,
 					url=$(target).attr('src'),
-					newUrl;
-				newUrl=url.replace(self.smallImageHost,self.bigImageHost);
-				//todo:用正则去掉链接的后缀
-				newUrl=newUrl.slice(0,newUrl.length-9);
+					pureUrl;
+
+				var imageSuffix=/.\d+(x|X)\d*.(png|jpg|jpeg)/,//匹配图片的大小后缀
+					result=url.match(imageSuffix);
+				if(result.length>0){
+					pureUrl=url.replace(result[0],'');	
+				}else{
+					console.log('去除图片后缀的时候出错');
+				}
+				url=pureUrl+'.800x.jpg';//统一让大图的宽为800；
+				var desImg=new Image();
+				desImg.src=url;
 				if($('#icDialog').length==0){
-					_initDOM(url,newUrl);
-					_initOptionEvent();
+					if(desImg.complete){//大图加载完成后才执行初始化
+						_initDOM(url,pureUrl);
+						_initOptionEvent();
+					}
 				}
 			});
 
-			function _initDOM(smallUrl,bigUrl){
+			function _initDOM(url,pureUrl){
 				var	modalDialogStr='<div id="icDialog"><span id="optionClose">X</span><div id="imgContainer"><img id="imageShow" class="imgChangeable"/></div><span id="optionBottom"><span id="optionReset">重置</span><span id="optionLarge">放大</span><span id="currentSize">100</span><span id="optionSmall">缩小</span><span id="optionRotate">旋转</span></span></div>';
 				$('body').append(modalDialogStr);
-				$('#imageShow').attr('src',smallUrl);
+				$('#imageShow').attr('src',url);
 				$('#imageShow').data({
-					smallUrl:smallUrl,
-					bigUrl:bigUrl
+					pureUrl:pureUrl,
+					url:url
 				});
 			}
 
 			function _initImageData(){
-				var width=$('#imageShow').width(),
-					height=$('#imageShow').height();
-				$('#imageShow').data({
-					originWidth:width,
-					originHeight:height,
-					width:width,
-					height:height,
+				$('#imageShow').css({
+					'transform':'rotate(0deg) scale(1)'
+				}).data({
+					scale:1,
 					rotate:0
 				});
+				$('#currentSize').html('100');
 			}
 
 
 			function _initOptionEvent(){
 				_initImageData();
 
+				$('#icDialog').draggable();
+
 				$('#optionClose').off('click').on('click',function(e){
 					$('#icDialog').remove();
 				});
 				$('#optionLarge').off('click').on('click',function(e){
-					var curWidth=$('#imageShow').data('width')+20;
-					if($('#imageShow').hasClass('imgChangeable')){
-						$('#imageShow').removeClass('imgChangeable');
-					}
-					if($('#imageShow').data('width')>=800&&$('#imageShow').attr('src')!==$('#imageShow').data('bigUrl')){
-						$('#imageShow').attr('src',$('#imageShow').data('bigUrl'));
-					}
-					_scale(curWidth);
-									
+					var curScale=$('#imageShow').data('scale')+0.1;
+					$('#imageShow').data('scale',curScale);
+					_scaleAndRotate();
 				});
 				$('#optionSmall').off('click').on('click',function(e){
-					var curWidth=$('#imageShow').data('width')-20;
-					if(curWidth>400){
-						_scale(curWidth)
-					}
+					var curScale=Math.max($('#imageShow').data('scale')-0.1,0.3);
+					$('#imageShow').data('scale',curScale);
+					_scaleAndRotate();
 				});
 
 				$('#optionRotate').off('click').on('click',function(e){
-					var angle=$('#imageShow').data('rotate'),
-						curWidth=$('#imageShow').data('width'),
-						curHeight=$('#imageShow').data('height'),
-						curRotate=$('#imageShow').data('rotate')+1;
-
-					if(curWidth>curHeight){
-						$('#imageShow').css('margin-top',(curWidth-curHeight)/2+'px');
-					}else{
-						$('#imageShow').css('margin-top',0);
-					}
-					$('#imageShow').css('transform','rotate('+curRotate*90+'deg)');
+					var curRotate=$('#imageShow').data('rotate')+1;
 					$('#imageShow').data('rotate',curRotate);
+					_scaleAndRotate();
 				});
 
 				$('#optionReset').off('click').on('click',function(e){
-					_reset();
+					_initImageData();
 				});
+
+				$('#imageShow').off('mousewheel').on('mousewheel',function(e){
+					e.stopPropagation();
+					e.preventDefault();
+					if(e.deltaY>0){
+						$('#optionLarge').trigger('click');
+					}else{
+						$('#optionSmall').trigger('click');
+					}
+				});
+				$('#imageShow').draggable();
 			}
 
 			function _calculateAndSet(){
-				var curSize=$('#imageShow').data('width')*$('#imageShow').data('height'),
-					originSize=$('#imageShow').data('originWidth')*$('#imageShow').data('originHeight'),
-					ratio=parseInt(curSize/originSize*100);
-					console.log(ratio);
+				var curScale=$('#imageShow').data('scale'),
+					ratio=parseInt(curScale*100);
 				$('#currentSize').html(ratio);
 			}
 
-			function _scale(curWidth){
-				$('#imageShow').width(curWidth);
-				$('#imageShow').data('width',curWidth);
-				$('#imageShow').data('height',$('#imageshow').height());
+			function _scaleAndRotate(){
+				var curScale=$('#imageShow').data('scale'),
+					curRotate=$('#imageShow').data('rotate');
+				$('#imageShow').css('transform','scale('+curScale+') rotate('+curRotate*90+'deg)');
 				_calculateAndSet();
 			}
-
-			function _reset(){
-				$('#imageShow').width($('#imageShow').data('originWidth'));
-				$('#imageShow').css({
-					'transform':'rotate(0deg)',
-					'margin-top':0
-				});
-				$('#currentSize').html('100');
-				_initImageData();
-			}
-
 		}
 
 	}
