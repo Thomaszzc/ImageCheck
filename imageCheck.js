@@ -89,7 +89,7 @@
 				$('#imageShow').off('mousewheel').on('mousewheel',function(e){
 					e.stopPropagation();
 					e.preventDefault();
-					if(e.deltaY>0){
+					if(e.originalEvent.deltaY>0){
 						$('#optionLarge').trigger('click');
 					}else{
 						$('#optionSmall').trigger('click');
