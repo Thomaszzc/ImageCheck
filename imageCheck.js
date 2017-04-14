@@ -12,36 +12,88 @@
 	ImageCheck.prototype={
 		constructor:ImageCheck,
 		init:function(param){
-			var self=this;
+			var self=this,
+				imageArray=[],
+				curIndex;
+
+			$('.imageCheck').each(function(i){
+				imageArray.push(_filterSrc($(this).attr('src')));
+				console.log(imageArray);
+			});
+
+
 			$('.imageCheck').off('click').on('click',function(e){
 				var target=e.target,
 					url=$(target).attr('src'),
-					pureUrl;
 
-				var imageSuffix=/.\d+(x|X)\d*.(png|jpg|jpeg)/,//匹配图片的大小后缀
-					result=url.match(imageSuffix);
-				if(result.length>0){
-					pureUrl=url.replace(result[0],'');	
-				}else{
-					console.log('去除图片后缀的时候出错');
-				}
-				url=pureUrl+'.800x.jpg';//统一让大图的宽为800；
+				url=_filterSrc(url);
+				curIndex=_getIndexAccordSrc(url);
+				_loadImg(curIndex);
 				var desImg=new Image();
 				desImg.src=url;
 				if($('#icDialog').length==0){
 					if(desImg.complete){//大图加载完成后才执行初始化
-						_initDOM(url,pureUrl);
+						_initDOM(url);
 						_initOptionEvent();
 					}
 				}
 			});
 
-			function _initDOM(url,pureUrl){
-				var	modalDialogStr='<div id="icDialog"><span id="optionClose">X</span><div id="imgContainer"><img id="imageShow" class="imgChangeable"/></div><span id="optionBottom"><span id="optionReset">重置</span><span id="optionLarge">放大</span><span id="currentSize">100</span><span id="optionSmall">缩小</span><span id="optionRotate">旋转</span></span></div>';
+			function _loadImg(curIndex){
+				_initImageData();
+				var url=imageArray[curIndex];
+				$('#imageShow').attr('src',url);
+			}
+
+
+			function _filterSrc(url){
+				var filterUrl,
+					imageSuffix=/.\d+(x|X)\d*.(png|jpg|jpeg)/,//匹配图片的大小后缀
+					result=url.match(imageSuffix);
+				
+				if(result.length>0){
+					url=url.replace(result[0],'');	
+				}else{
+					console.log('去除图片后缀的时候出错');
+				}
+				filterUrl=url+'.800x.jpg';//统一让大图的宽为800；
+				return filterUrl;
+			}
+
+			function _getIndexAccordSrc(url){
+				for(var i=0;i<imageArray.length;i++){
+					if(imageArray[i]==url){
+						return i;
+					}
+				}
+				return -1;
+			}
+
+
+			function _initDOM(url){
+				var	modalDialogStr='<div id="icDialog">\
+										<span id="optionClose">X</span>\
+											<div id="imgContainer">\
+												<img id="imageShow" class="imgChangeable"/>\
+												<span id="optionBefore"><</span>\
+												<span id="optionNext">></span>\
+											</div>\
+											<span id="optionBottom">\
+												<span id="optionReset">重置</span>\
+												<span id="optionLarge">放大</span>\
+												<span id="currentSize">100</span>\
+												<span id="optionSmall">缩小</span>\
+												<span id="optionRotate">旋转</span>\
+											</span></div>';
+
+
 				$('body').append(modalDialogStr);
+
+
+
+
 				$('#imageShow').attr('src',url);
 				$('#imageShow').data({
-					pureUrl:pureUrl,
 					url:url
 				});
 			}
@@ -85,6 +137,16 @@
 				$('#optionReset').off('click').on('click',function(e){
 					_initImageData();
 				});
+
+				$('#optionBefore').off('click').on('click',function(e){
+					curIndex=(curIndex-1)>=0?curIndex-1:imageArray.length-1;
+					_loadImg(curIndex);
+				});
+				$('#optionNext').off('click').on('click',function(e){
+					curIndex=(curIndex+1)%imageArray.length;
+					_loadImg(curIndex);
+				});
+
 
 				$('#imageShow').off('mousewheel').on('mousewheel',function(e){
 					e.stopPropagation();
